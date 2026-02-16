@@ -1,16 +1,6 @@
 name: Building kernel
 
-on: # [push]
-#  release:
-#    types: [published]
-#  push:
-#    branches:
-#      - master
-#    paths:
-#      - '.config'
-#  schedule:
-#    - cron: 0 8 * * 5
-# Allows you to run this workflow manually from the Actions tab
+on:
   workflow_dispatch:
     inputs:
       COMPILER:
@@ -20,7 +10,7 @@ on: # [push]
       KREPO:
         description: 'kernel repo'
         required: true
-        default: 'https://github.com/zyexro/niigo_kernel_xiaomi_blossom'
+        default: 'https://github.com/Zyrelo/niigo_kernel_xiaomi_blossom'
       KBRANCH:
         description: 'kernel branch'
         required: true
@@ -46,9 +36,9 @@ on: # [push]
         required: false
         default: 'both'
       TG_RECIPENT:
-        description: 'idk'
+        description: 'telegram id'
         required: false
-        default: '5863300453'
+        default: '8583334205'
       CONTAINER:
         description: 'if you know you know'
         required: true
@@ -77,6 +67,7 @@ jobs:
     steps:
         - name: checkout
           uses: actions/checkout@master
+
         - name: why
           run: |
             echo WORKFLOW_START=$(date +"%s") >> $GITHUB_ENV
@@ -84,9 +75,11 @@ jobs:
             if [ ! -z $ALT_RECIPENT ]; then
               echo CHAT_ID="$ALT_RECIPENT" >> $GITHUB_ENV
             fi
+
         - name: start of workflow
           run: |
             bash tg_utils.sh msg "gh $RUN_NUM: workflow started"
+
         - name: init build env
           run: |
             dnf group install development-tools -y
@@ -94,27 +87,32 @@ jobs:
             ln -sf "/usr/bin/python3" /usr/bin/python
             git config --global user.name "John Doe"
             git config --global user.email "idk@example.com"
+
         - name: show host info
           run: |
             if [ ! -z "$VERBOSE" ]; then
               bash tg_utils.sh msg "gh $RUN_NUM: build env initialized%nlgh $RUN_NUM: host: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'=' -f2)%nlgh $RUN_NUM: free disk space: $(df --sync -BM --output=avail / | grep -v Avail)"
             fi
+
         - name: print notes if exists
           run: |
             if [ ! -z "$NOTE" ]; then
               bash tg_utils.sh msg "gh $RUN_NUM: $NOTE"
             fi
+
         - name: clone kernel source
           run: |
             if [ ! -z "$VERBOSE" ]; then
               bash tg_utils.sh msg "gh $RUN_NUM: cloning kernel source%nlgh $RUN_NUM: repo: $REPO%nlgh $RUN_NUM: branch: $KERNEL_BRANCH"
             fi
             git clone --depth=1 --single-branch $REPO -b $KERNEL_BRANCH kernel
+
         - name: print kernel info
           run: |
             cd kernel
             source ../env
             bash ../tg_utils.sh msg "gh $RUN_NUM: kernel name: ${kernel_name}%nlgh $RUN_NUM: kernel ver: ${kernel_ver}%nlgh $RUN_NUM: kernel head commit: ${kernel_head}%nlgh $RUN_NUM: defconfig: ${defconfig}"
+
         - name: run compilation scripts
           run: |
             cd kernel
@@ -160,15 +158,16 @@ jobs:
                 fi
               done
             fi
+
         - name: if it fails
           if: ${{ failure() }}
           run: |
             WORKFLOW_END=$(date +"%s")
             WDIFF=$((WORKFLOW_END - WORKFLOW_START))
             bash tg_utils.sh msg "gh $RUN_NUM: workflow failed in $((WDIFF / 60))m, $((WDIFF % 60))s"
+
         - name: end of workflow
           run: |
             WORKFLOW_END=$(date +"%s")
             WDIFF=$((WORKFLOW_END - WORKFLOW_START))
             bash tg_utils.sh msg "gh $RUN_NUM: workflow ended in $((WDIFF / 60))m, $((WDIFF % 60))s"
-
