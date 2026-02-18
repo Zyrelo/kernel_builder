@@ -20,7 +20,7 @@ on: # [push]
       KREPO:
         description: 'kernel repo'
         required: true
-        default: 'https://github.com/zyexro/niigo_kernel_xiaomi_blossom'
+        default: 'https://github.com/zyrelo/niigo_kernel_xiaomi_blossom'
       KBRANCH:
         description: 'kernel branch'
         required: true
@@ -48,7 +48,7 @@ on: # [push]
       TG_RECIPENT:
         description: 'idk'
         required: false
-        default: '5863300453'
+        default: '7003397937'
       CONTAINER:
         description: 'if you know you know'
         required: true
